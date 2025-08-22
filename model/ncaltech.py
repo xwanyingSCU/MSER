@@ -33,7 +33,7 @@ class FPN_Multi_ResNet34_Moe(nn.Module):
 
 
 
-        self.dec= nn.Parameter(torch.randn(2))
+        self.raw_decay = nn.Parameter(torch.randn(2))
         self.scale=100
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
 
@@ -49,10 +49,9 @@ class FPN_Multi_ResNet34_Moe(nn.Module):
         x_2conv = self.conv1_1(x_2)
         x_3conv = self.conv1_1(x_3)
 
-
-
-        x_1_2conv = self.dec[0].unsqueeze(0).unsqueeze(1) * x_1conv + x_2conv
-        x_1_2_3conv = self.dec[1].unsqueeze(0).unsqueeze(1) * x_1_2conv + x_3conv
+        decay = torch.sigmoid(self.raw_decay)
+        x_1_2conv = decay[0] * x_1conv + x_2conv
+        x_1_2_3conv = decay[1] * x_1_2conv + x_3conv
 
 
         multi1_2_3 = torch.cat((x_1conv, x_1_2conv, x_1_2_3conv), dim=1)

@@ -37,7 +37,7 @@ parser.add_argument("--batch_size", default=16, type=int, help="batch size")
 parser.add_argument("--cuda", default="2", help="The GPU ID")
 args = parser.parse_args()
 img_type_dict={
-    'log':{'channel_num':6, 'file': "/data/xwy/ncaltech/feature_log_win3.hdf5"},
+    'log':{'channel_num':6, 'file': "/data/xwy/ncaltech/feature_ncaltech.hdf5"},
 }
 device = torch.device("cuda:"+args.cuda if torch.cuda.is_available() else "cpu")
 
@@ -50,7 +50,10 @@ folder_names = folder_name.tolist()
 
 model =FPN_Multi_ResNet34_Moe(101)
 model = model.to(device)
-optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+optimizer = torch.optim.Adam([
+    {"params": model.raw_decay, "lr": 0.01},
+    {"params": [p for n, p in model.named_parameters() if n != "raw_decay"]}
+], lr=learning_rate)
 scheduler = StepLR(optimizer, step_size=10, gamma=0.5)
 
 
